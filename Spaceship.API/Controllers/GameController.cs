@@ -46,5 +46,22 @@ namespace Spaceship.API.Controllers
 
             return Created(uri, createdGame);
         }
+
+        [HttpPut("{gameId}")]
+        public ActionResult Fire([FromBody] FireDTO fireDto, string gameId)
+        {
+            var parsedGameId = ParseId(gameId);
+            var game = gameRepository.GetGame(parsedGameId);
+            if (game?.Status == GameStatus.Finished) return NotFound();
+
+            return Ok();
+        }
+
+        private long ParseId(string gameId)
+        {
+            var idString = gameId.Split('-').LastOrDefault();
+            long.TryParse(idString, out long id);
+            return id;
+        }
     }
 }

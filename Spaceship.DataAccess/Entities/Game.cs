@@ -10,5 +10,12 @@
         public string OpponentHostname { get; set; }
         public int OpponentPort { get; set; }
         public string Starting { get; set; }
+        public GameStatus Status { get; set; }
+    }
+
+    public enum GameStatus
+    {
+        InProgress,
+        Finished
     }
 }

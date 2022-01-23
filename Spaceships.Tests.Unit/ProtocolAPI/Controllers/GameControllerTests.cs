@@ -44,6 +44,31 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
             dto.GameId.Should().Be($"match-{gameId}");
         }
 
+        [Fact]
+        void Fire_GameInProgress_ReturnsOk()
+        {
+            var gameRepoMock = new Mock<IGameRepository>();
+            gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(new Game { Status = GameStatus.InProgress });
+            var controller = new GameController(Mock.Of<IGameRepository>(), Mock.Of<IConfiguration>());
+
+            var result = controller.Fire(It.IsAny<FireDTO>(), "");
+
+            result.Should().BeOfType<OkResult>();
+        }
+
+        [Fact]
+        void Fire_GameFinished_ReturnsNotFound()
+        {
+            var gameRepoMock = new Mock<IGameRepository>();
+            gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(new Game { Status = GameStatus.Finished });
+            var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
+
+            var result = controller.Fire(It.IsAny<FireDTO>(), "");
+
+            result.Should().BeOfType<NotFoundResult>();
+        }
+
+
         private IGameRepository GetMockGameRepo(long gameId)
         {
             var mockRepo = new Mock<IGameRepository>();
