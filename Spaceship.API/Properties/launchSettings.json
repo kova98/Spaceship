@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "Spaceship.API": {
+    "Spaceship.ProtocolAPI": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
