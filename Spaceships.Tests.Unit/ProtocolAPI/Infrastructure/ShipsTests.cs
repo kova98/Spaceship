@@ -26,7 +26,7 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Infrastructure
             shipString.Should().Be(shipAsArray);
         }
 
-        //    Top          Left       Bottom         Right  
+        //    Top          Right       Bottom         Left  
         //  1, 0, 0   0, 1, 1, 1, 1   0, 0, 0    0, 0, 0, 1, 0 
         //  1, 0, 0   0, 1, 0, 0, 0   1, 1, 1    0, 0, 0, 1, 0     
         //  1, 0, 0   0, 1, 0, 0, 0   0, 0, 1    1, 1, 1, 1, 0   
