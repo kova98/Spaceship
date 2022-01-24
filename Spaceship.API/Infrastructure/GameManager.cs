@@ -8,6 +8,8 @@ namespace Spaceship.ProtocolAPI.Infrastructure
         private IGameRepository gameRepository;
         private Game game;
 
+        const int GridSize = 16;
+
         public GameManager(IGameRepository gameRepository, Game game)
         {
             this.gameRepository = gameRepository;
@@ -33,17 +35,34 @@ namespace Spaceship.ProtocolAPI.Infrastructure
                 ships.Add(ship);
             }
 
-            var grid = new int[16, 16];
+            var grid = new int[GridSize, GridSize];
             var possibleSpots = new Stack<(int x, int y)>(GetRandomSpots());
 
-            foreach (var ship in ships)
+            for (int i = 0; i < ships.Count; i++)
             {
-                grid = PlaceShipOnGrid(ship, grid, possibleSpots.Pop());
+                SetShipId(ships[i], i + 1);
+                grid = PlaceShipOnGrid(ships[i], grid, possibleSpots.Pop());
             }
 
             var flattened = grid.Cast<int>().ToArray();
 
             return string.Join(',', flattened);
+        }
+
+        private void SetShipId(int[,] ship, int id)
+        {
+            var width = ship.GetUpperBound(0);
+            var height = ship.GetUpperBound(1);
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    if (ship[i,j] == 1)
+                    {
+                        ship[i,j] = id;
+                    }
+                }
+            }
         }
 
         private int[,] PlaceShipOnGrid(int[,] ship, int[,] grid, (int x, int y) spot)
@@ -63,6 +82,68 @@ namespace Spaceship.ProtocolAPI.Infrastructure
 
             return grid;
         }
+
+        public List<Shot> Fire(string[] salvo)
+        {
+            var shots = GetShotsFromSalvo(salvo);
+            ProcessShots(shots);
+
+            return shots;
+        }
+
+        private void ProcessShots(List<Shot> shots)
+        {
+            var grid = GetGrid();
+
+            foreach (var shot in shots)
+            {
+                shot.Status = grid[shot.Location.X, shot.Location.Y] switch
+                {
+                    0 => ShotStatus.Miss,
+                    > 0 => Killed(shot, grid) ? ShotStatus.Kill : ShotStatus.Hit,
+                    _ => throw new Exception("Negative value found in grid.")
+                };
+            }
+        }
+
+        private bool Killed(Shot shot, int[,] grid)
+        {
+            // TODO
+            return false;
+        }
+
+        private int[,] GetGrid()
+        {
+            var gridFields = game.PlayerGrid.Split(',').Select(x => int.Parse(x));
+            var queue = new Queue<int>(gridFields);
+            var grid = new int[GridSize, GridSize];
+
+            for (int i = 0; i < GridSize; i++)
+            {
+                for (int j = 0; j < GridSize; j++)
+                {
+                    grid[i, j] = queue.Dequeue();
+                }
+            }
+
+            return grid;
+        }
+
+        private List<Shot> GetShotsFromSalvo(string[] salvo)
+        {
+            var shots = new List<Shot>();
+            foreach (var shotString in salvo)
+            {
+                var split = shotString.Split('x');
+                var x = int.Parse(split[0], System.Globalization.NumberStyles.HexNumber);
+                var y = int.Parse(split[1], System.Globalization.NumberStyles.HexNumber);
+
+                shots.Add(new Shot { Location = new(x, y) });
+            }
+
+            return shots;
+        }
+
 
         private (int x, int y)[] GetRandomSpots()
         {

@@ -8,6 +8,7 @@ using Spaceship.DataAccess.Interfaces;
 using Spaceship.ProtocolAPI.Infrastructure;
 using Spaceship.ProtocolAPI.Models;
 using System;
+using System.Linq;
 using Xunit;
 
 namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
@@ -49,13 +50,15 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
         [Fact]
         void Fire_GameInProgress_ReturnsOk()
         {
+            var game = GetGameWithShipOn((0, 0));
+            game.Status = GameStatus.InProgress;
             var gameRepoMock = new Mock<IGameRepository>();
-            gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(new Game { Status = GameStatus.InProgress });
-            var controller = new GameController(Mock.Of<IGameRepository>(), Mock.Of<IConfiguration>());
+            gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
+            var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
 
-            var result = controller.Fire(It.IsAny<FireDTO>(), "");
+            var result = controller.Fire(new FireDTO { Salvo = new string[] { } }, "");
 
-            result.Should().BeOfType<OkResult>();
+            result.Should().BeOfType<OkObjectResult>();
         }
 
         [Fact]
@@ -71,15 +74,57 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
         }
 
         [Fact]
-        void Fire_CallsFireOnGameManager()
+        void Fire_ProcessesShots()
         {
+            var game = GetGameWithShipOn((0, 1), (0, 2));
             var gameRepoMock = new Mock<IGameRepository>();
-            gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(new Game { Status = GameStatus.InProgress });
-            //var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
+            gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
+            var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
+            var fireDto = new FireDTO { Salvo = new string[] { "0x0", "8x4", "DxA"} };
 
-            //controller.Fire(new FireDTO { Salvo = new string[]{ "5xA" } });
+            var result = (OkObjectResult)controller.Fire(fireDto, "");
+            var responseDto = result.Value as FireResponseDTO;
 
-            //gameManagerMock.Verify(x => x.CreateGame(game), Times.Once());
+            responseDto.Should().BeOfType<FireResponseDTO>();
+            responseDto.Salvo.Count.Should().Be(3);
+            responseDto.Salvo["0x0"].Should().NotBeNull();
+            responseDto.Salvo["8x4"].Should().NotBeNull();
+            responseDto.Salvo["DxA"].Should().NotBeNull();
+        }
+
+        [Fact]
+        void Fire_RegistersHits()
+        {
+            var game = GetGameWithShipOn((0, 1), (0, 2));
+            var gameRepoMock = new Mock<IGameRepository>();
+            gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
+            var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
+            var fireDto = new FireDTO { Salvo = new string[] { "0x0", "0x1", "0x2" } };
+            
+            var result = (OkObjectResult)controller.Fire(fireDto, "");
+            var responseDto = result.Value as FireResponseDTO;
+
+            responseDto.Should().BeOfType<FireResponseDTO>();
+            responseDto.Salvo.Count.Should().Be(3);
+            responseDto.Salvo["0x0"].Should().Be("miss");
+            responseDto.Salvo["0x1"].Should().Be("hit");
+            responseDto.Salvo["0x2"].Should().Be("hit");
+        }
+
+        private Game GetGameWithShipOn(params (int x, int y)[] positions)
+        {
+            var grid = new int[16, 16];
+
+            foreach (var position in positions)
+            {
+                grid[position.x, position.y] = 1;
+            }
+
+            var flattened = grid.Cast<int>().ToArray();
+            var gridString = string.Join(',', flattened);
+            var game = new Game { PlayerGrid = gridString };
+
+            return game;
         }
 
         private IGameRepository GetMockGameRepo(long gameId)
