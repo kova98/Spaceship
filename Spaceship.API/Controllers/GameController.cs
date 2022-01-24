@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Spaceship.DataAccess.Entities;
 using Spaceship.DataAccess.Interfaces;
+using Spaceship.ProtocolAPI.Infrastructure;
 using Spaceship.ProtocolAPI.Models;
 
 namespace Spaceship.API.Controllers
@@ -32,19 +33,20 @@ namespace Spaceship.API.Controllers
                 OpponentPort = gameNewDto.SpaceshipProtocol.Port
             };
 
-            var gameId = gameRepository.CreateGame(game);
+            var gameManager = new GameManager(gameRepository, game);
+            gameManager.InitializeGame();
 
-            var createdGame = new GameCreatedDTO
+            var createdGameDto = new GameCreatedDTO
             {
                 UserId = config["PlayerId"],
                 FullName = config["PlayerName"],
-                GameId = $"match-{gameId}",
+                GameId = $"match-{game.Id}",
                 Starting = game.Starting
             };
 
-            var uri = $"{config["UserAPI"]}/match-{gameId}";
+            var uri = $"{config["UserAPI"]}/match-{game.Id}";
 
-            return Created(uri, createdGame);
+            return Created(uri, createdGameDto);
         }
 
         [HttpPut("{gameId}")]

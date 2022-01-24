@@ -11,6 +11,8 @@
         public int OpponentPort { get; set; }
         public string Starting { get; set; }
         public GameStatus Status { get; set; }
+        public string PlayerGrid { get; set; }
+        public string OpponentGrid { get; set; }
     }
 
     public enum GameStatus
