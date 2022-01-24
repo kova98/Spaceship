@@ -94,7 +94,7 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
         }
 
         [Fact]
-        void Fire_RegistersHits()
+        void Fire_RegistersHitsAndReturnsCorrectShotStatuses()
         {                                                    
             const int Ship = 1;                              
             const int Hit = -1;
@@ -116,7 +116,7 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
         }
 
         [Fact]
-        void Fire_UpdatesGame()
+        void Fire_UpdatesGridAndGame()
         {
             var game = GetGameWithFieldSetTo((0, 0, 1));
             var gameRepoMock = new Mock<IGameRepository>();
@@ -127,6 +127,36 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
 
             game.PlayerGrid.Should().StartWith("-2", "the first field was hit and destroyed");
             gameRepoMock.Verify(x => x.UpdateGame(game));
+        }
+
+        [Fact]
+        void Fire_LastShipDestroyed_ReturnsWonWithOpponentId()
+        {
+            var game = GetGameWithFieldSetTo((0, 0, 1));
+            game.OpponentId = "opponent-1";
+            var gameRepoMock = new Mock<IGameRepository>();
+            gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
+            var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
+
+            var result = (OkObjectResult)controller.Fire(new FireDTO { Salvo = new string[] { "0x0" } }, "");
+            var responseDto = result.Value as FireResponseDTO;
+
+            responseDto.Game.Won.Should().Be("opponent-1");
+        }
+
+
+        [Fact]
+        void Fire_GameNotFinished_DoesNotReturnWon()
+        {
+            var game = GetGameWithFieldSetTo((0, 1, 1));
+            var gameRepoMock = new Mock<IGameRepository>();
+            gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
+            var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
+
+            var result = (OkObjectResult)controller.Fire(new FireDTO { Salvo = new string[] { "0x0" } }, "");
+            var responseDto = result.Value as FireResponseDTO;
+
+            responseDto.Game.Should().BeNull();
         }
 
         private Game GetGameWithFieldSetTo(params (int x, int y, int value)[] fields)

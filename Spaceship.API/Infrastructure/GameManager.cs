@@ -83,6 +83,12 @@ namespace Spaceship.ProtocolAPI.Infrastructure
             return grid;
         }
 
+        public bool AllShipsDestroyed()
+        {
+            var gridFields = game.PlayerGrid.Split(',').Select(x => int.Parse(x));
+            return gridFields.Any(x => x > 0) == false;
+        }
+
         public List<Shot> Fire(string[] salvo)
         {
             var shots = GetShotsFromSalvo(salvo);
