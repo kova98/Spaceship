@@ -6,5 +6,10 @@
         public (int X, int Y) Location { get; set; }
     }
 
-    public enum ShotStatus { Hit, Kill, Miss }
+    public enum ShotStatus 
+    { 
+        Kill = -2, 
+        Hit = -1, 
+        Miss = 0,
+    }
 }

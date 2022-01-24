@@ -87,6 +87,7 @@ namespace Spaceship.ProtocolAPI.Infrastructure
         {
             var shots = GetShotsFromSalvo(salvo);
             ProcessShots(shots);
+            gameRepository.UpdateGame(game);
 
             return shots;
         }
@@ -98,14 +99,25 @@ namespace Spaceship.ProtocolAPI.Infrastructure
             foreach (var shot in shots)
             {
                 var value = grid[shot.Location.X, shot.Location.Y];
-                shot.Status = value switch
+
+                if (value <= 0)
                 {
-                    -1 => ShotStatus.Miss,
-                    0 => ShotStatus.Miss,
-                    > 0 => Killed(shot, grid) ? ShotStatus.Kill : ShotStatus.Hit,
-                    _ => throw new Exception($"Unkown value ({value}) found in grid.")
-                };
+                    shot.Status = ShotStatus.Miss;
+                }
+                else 
+                {
+                    shot.Status = Killed(shot, grid) ? ShotStatus.Kill : ShotStatus.Hit;
+                    grid[shot.Location.X, shot.Location.Y] = (int)shot.Status;
+                }
             }
+
+            SaveGrid(grid);
+        }
+
+        private void SaveGrid(int[,] grid)
+        {
+            var flattened = grid.Cast<int>().ToArray();
+            game.PlayerGrid = string.Join(',', flattened);
         }
 
         private bool Killed(Shot shot, int[,] grid)

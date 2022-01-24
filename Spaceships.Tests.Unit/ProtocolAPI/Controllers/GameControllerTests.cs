@@ -112,7 +112,21 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
             responseDto.Salvo["0x0"].Should().Be("miss");
             responseDto.Salvo["0x1"].Should().Be("hit");
             responseDto.Salvo["0x2"].Should().Be("hit");
-            responseDto.Salvo["0x3"].Should().Be("miss");
+            responseDto.Salvo["0x3"].Should().Be("miss"); // todo clarify with because
+        }
+
+        [Fact]
+        void Fire_UpdatesGame()
+        {
+            var game = GetGameWithFieldSetTo((0, 0, 1));
+            var gameRepoMock = new Mock<IGameRepository>();
+            gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
+            var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
+
+            controller.Fire(new FireDTO { Salvo = new string[] { "0x0" } }, "");
+
+            game.PlayerGrid.Should().StartWith("-1", "the first field was hit");
+            gameRepoMock.Verify(x => x.UpdateGame(game));
         }
 
         private Game GetGameWithFieldSetTo(params (int x, int y, int value)[] fields)
