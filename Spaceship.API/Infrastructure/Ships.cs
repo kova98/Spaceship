@@ -11,6 +11,7 @@
                 ShipType.AClass => AClass,
                 ShipType.BClass => BClass,
                 ShipType.SClass => SClass,
+                _ => throw new ArgumentException("Invalid ShipType", nameof(type)),
             };
 
             for (int i = 0; i < (int)orientation; i++)
