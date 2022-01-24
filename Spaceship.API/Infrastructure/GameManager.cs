@@ -97,11 +97,13 @@ namespace Spaceship.ProtocolAPI.Infrastructure
 
             foreach (var shot in shots)
             {
-                shot.Status = grid[shot.Location.X, shot.Location.Y] switch
+                var value = grid[shot.Location.X, shot.Location.Y];
+                shot.Status = value switch
                 {
+                    -1 => ShotStatus.Miss,
                     0 => ShotStatus.Miss,
                     > 0 => Killed(shot, grid) ? ShotStatus.Kill : ShotStatus.Hit,
-                    _ => throw new Exception("Negative value found in grid.")
+                    _ => throw new Exception($"Unkown value ({value}) found in grid.")
                 };
             }
         }

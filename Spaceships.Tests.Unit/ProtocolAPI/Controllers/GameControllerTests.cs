@@ -50,7 +50,7 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
         [Fact]
         void Fire_GameInProgress_ReturnsOk()
         {
-            var game = GetGameWithShipOn((0, 0));
+            var game = GetGameWithFieldSetTo((0, 0, 0));
             game.Status = GameStatus.InProgress;
             var gameRepoMock = new Mock<IGameRepository>();
             gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
@@ -76,7 +76,8 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
         [Fact]
         void Fire_ProcessesShots()
         {
-            var game = GetGameWithShipOn((0, 1), (0, 2));
+            const int Ship = 1;
+            var game = GetGameWithFieldSetTo((0, 1, Ship), (0, 2, Ship));
             var gameRepoMock = new Mock<IGameRepository>();
             gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
             var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
@@ -95,29 +96,32 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
         [Fact]
         void Fire_RegistersHits()
         {
-            var game = GetGameWithShipOn((0, 1), (0, 2));
+            const int Ship = 1;
+            const int Hit = -1;
+            var game = GetGameWithFieldSetTo((0, 1, Ship), (0, 2, Ship), (0, 3, Hit));
             var gameRepoMock = new Mock<IGameRepository>();
             gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
             var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
-            var fireDto = new FireDTO { Salvo = new string[] { "0x0", "0x1", "0x2" } };
+            var fireDto = new FireDTO { Salvo = new string[] { "0x0", "0x1", "0x2", "0x3" } };
             
             var result = (OkObjectResult)controller.Fire(fireDto, "");
             var responseDto = result.Value as FireResponseDTO;
 
             responseDto.Should().BeOfType<FireResponseDTO>();
-            responseDto.Salvo.Count.Should().Be(3);
+            responseDto.Salvo.Count.Should().Be(4);
             responseDto.Salvo["0x0"].Should().Be("miss");
             responseDto.Salvo["0x1"].Should().Be("hit");
             responseDto.Salvo["0x2"].Should().Be("hit");
+            responseDto.Salvo["0x3"].Should().Be("miss");
         }
 
-        private Game GetGameWithShipOn(params (int x, int y)[] positions)
+        private Game GetGameWithFieldSetTo(params (int x, int y, int value)[] fields)
         {
             var grid = new int[16, 16];
 
-            foreach (var position in positions)
+            foreach (var field in fields)
             {
-                grid[position.x, position.y] = 1;
+                grid[field.x, field.y] = field.value;
             }
 
             var flattened = grid.Cast<int>().ToArray();
