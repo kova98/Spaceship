@@ -5,6 +5,7 @@ using Moq;
 using Spaceship.API.Controllers;
 using Spaceship.DataAccess.Entities;
 using Spaceship.DataAccess.Interfaces;
+using Spaceship.ProtocolAPI.Infrastructure;
 using Spaceship.ProtocolAPI.Models;
 using System;
 using Xunit;
@@ -32,7 +33,7 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
             var mockConfig = GetMockConfig(playerId, playerName);
             var mockGameRepo = GetMockGameRepo(gameId);
             var controller = new GameController(mockGameRepo, mockConfig);
-            var newGameDto = new GameNewDTO { SpaceshipProtocol = new SpaceshipProtocol { } };
+            var newGameDto = new GameNewDTO { SpaceshipProtocol = new SpaceshipProtocol { }, UserId = "opponent-1" };
 
             var result = (CreatedResult)controller.NewGame(newGameDto);
             var dto = result.Value as GameCreatedDTO;
@@ -42,6 +43,7 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
             dto.UserId.Should().Be(playerId);
             dto.FullName.Should().Be(playerName);
             dto.GameId.Should().Be($"match-{gameId}");
+            dto.Starting.Should().Be($"opponent-1");
         }
 
         [Fact]
@@ -68,6 +70,17 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
             result.Should().BeOfType<NotFoundResult>();
         }
 
+        [Fact]
+        void Fire_CallsFireOnGameManager()
+        {
+            var gameRepoMock = new Mock<IGameRepository>();
+            gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(new Game { Status = GameStatus.InProgress });
+            //var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
+
+            //controller.Fire(new FireDTO { Salvo = new string[]{ "5xA" } });
+
+            //gameManagerMock.Verify(x => x.CreateGame(game), Times.Once());
+        }
 
         private IGameRepository GetMockGameRepo(long gameId)
         {

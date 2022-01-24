@@ -18,6 +18,7 @@ namespace Spaceship.ProtocolAPI.Infrastructure
         {
             game.OpponentGrid = RandomlyPopulateGridWithShips();
             game.PlayerGrid = RandomlyPopulateGridWithShips();
+            game.Starting = game.OpponentId;
             game.Id = gameRepository.CreateGame(game);
         }
 
