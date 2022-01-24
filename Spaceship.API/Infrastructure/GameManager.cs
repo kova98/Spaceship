@@ -98,13 +98,15 @@ namespace Spaceship.ProtocolAPI.Infrastructure
 
             foreach (var shot in shots)
             {
-                var value = grid[shot.Location.X, shot.Location.Y];
+                var locationValue = grid[shot.Location.X, shot.Location.Y];
 
-                if (value <= 0)
+                // If there is no ship or the location had already been hit 
+                if (locationValue <= 0)
                 {
                     shot.Status = ShotStatus.Miss;
                 }
-                else 
+                // if the location is a part of the ship not previously hit
+                else if (locationValue > 0)
                 {
                     shot.Status = Killed(shot, grid) ? ShotStatus.Kill : ShotStatus.Hit;
                     grid[shot.Location.X, shot.Location.Y] = (int)shot.Status;
@@ -122,8 +124,22 @@ namespace Spaceship.ProtocolAPI.Infrastructure
 
         private bool Killed(Shot shot, int[,] grid)
         {
-            // TODO
-            return false;
+            var shipId = grid[shot.Location.X, shot.Location.Y];
+
+            var intactShipParts = new List<(int, int)>();
+            for (int i = 0; i < GridSize; i++)
+            {
+                for (int j = 0; j < GridSize; j++)
+                {
+                    if (grid[i, j] == shipId)
+                    {
+                        intactShipParts.Add((i, j));
+                    }
+                }
+            }
+
+            // If this is the last intact part
+            return intactShipParts.Count == 1;
         }
 
         private int[,] GetGrid()
