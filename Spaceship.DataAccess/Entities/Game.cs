@@ -13,6 +13,7 @@
         public GameStatus Status { get; set; }
         public string PlayerGrid { get; set; }
         public string OpponentGrid { get; set; }
+        public string Winner { get; set; }
     }
 
     public enum GameStatus

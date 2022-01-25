@@ -83,7 +83,8 @@ namespace Spaceship.ProtocolAPI.Infrastructure
             return grid;
         }
 
-       
+        public List<Shot> GetMissedShots(string[] salvo) => GetShotsFromSalvo(salvo);
+
         public List<Shot> Fire(string[] salvo)
         {
             var shots = GetShotsFromSalvo(salvo);
@@ -93,6 +94,7 @@ namespace Spaceship.ProtocolAPI.Infrastructure
             if (AllShipsDestroyed())
             {
                 game.Status = GameStatus.Finished;
+                game.Winner = game.OpponentId;
             }
 
             gameRepository.UpdateGame(game);

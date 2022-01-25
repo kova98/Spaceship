@@ -64,15 +64,22 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
         }
 
         [Fact]
-        void Fire_GameFinished_ReturnsNotFound()
+        void Fire_GameFinished_ReturnsNotFoundWithResponse()
         {
+            var game = GetGameWithFieldSetTo((0, 0, 1));
+            game.Status = GameStatus.Finished;
+            game.Winner = "winner";
             var gameRepoMock = new Mock<IGameRepository>();
-            gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(new Game { Status = GameStatus.Finished });
+            gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
             var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
 
-            var result = controller.Fire(It.IsAny<FireDTO>(), "");
+            var result = (NotFoundObjectResult)controller.Fire(new FireDTO { Salvo = new string[] { } }, "");
+            var responseDto = result.Value as FireResponseDTO;
 
-            result.Should().BeOfType<NotFoundResult>();
+            result.Should().BeOfType<NotFoundObjectResult>();
+            responseDto.Should().BeOfType<FireResponseDTO>();
+            responseDto.Salvo.Should().NotBeNull();
+            responseDto.Game.Won.Should().Be("winner");
         }
 
         [Fact]

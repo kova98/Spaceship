@@ -54,20 +54,35 @@ namespace Spaceship.API.Controllers
         {
             var parsedGameId = ParseId(gameId);
             var game = gameRepository.GetGame(parsedGameId);
-            if (game?.Status == GameStatus.Finished) return NotFound();
-
             var gameManager = new GameManager(gameRepository, game);
+
+            if (game.Status == GameStatus.Finished)
+            {
+                return NotFoundWithMissedSalvo(gameManager, game, fireDto);
+            }
+
             var shots = gameManager.Fire(fireDto.Salvo);
 
             var fireResponseDto = new FireResponseDTO
             {
                 Salvo = ShotsToDictionary(shots),
                 Game = game.Status == GameStatus.Finished 
-                    ? new GameInfo { Won = game.OpponentId } 
+                    ? new GameInfo { Won = game.Winner } 
                     : null
             };
 
             return Ok(fireResponseDto);
+        }
+
+        private ActionResult NotFoundWithMissedSalvo(GameManager gameManager, Game game, FireDTO fireDto)
+        {
+            var response = new FireResponseDTO
+            {
+                Game = new GameInfo { Won = game.Winner },
+                Salvo = ShotsToDictionary(gameManager.GetMissedShots(fireDto.Salvo)),
+            };
+
+            return NotFound(response);
         }
 
         private Dictionary<string, string> ShotsToDictionary(List<Shot> shots)
