@@ -83,25 +83,27 @@ namespace Spaceship.ProtocolAPI.Infrastructure
             return grid;
         }
 
-        internal void FinishGame()
-        {
-            game.Status = GameStatus.Finished;
-            gameRepository.UpdateGame(game);
-        }
-
-        public bool AllShipsDestroyed()
-        {
-            var gridFields = game.PlayerGrid.Split(',').Select(x => int.Parse(x));
-            return gridFields.Any(x => x > 0) == false;
-        }
-
+       
         public List<Shot> Fire(string[] salvo)
         {
             var shots = GetShotsFromSalvo(salvo);
+
             ProcessShots(shots);
+
+            if (AllShipsDestroyed())
+            {
+                game.Status = GameStatus.Finished;
+            }
+
             gameRepository.UpdateGame(game);
 
             return shots;
+        }
+
+        private bool AllShipsDestroyed()
+        {
+            var gridFields = game.PlayerGrid.Split(',').Select(x => int.Parse(x));
+            return gridFields.Any(x => x > 0) == false;
         }
 
         private void ProcessShots(List<Shot> shots)

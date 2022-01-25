@@ -61,14 +61,11 @@ namespace Spaceship.API.Controllers
 
             var fireResponseDto = new FireResponseDTO
             {
-                Salvo = ShotsToDictionary(shots)
+                Salvo = ShotsToDictionary(shots),
+                Game = game.Status == GameStatus.Finished 
+                    ? new GameInfo { Won = game.OpponentId } 
+                    : null
             };
-
-            if (gameManager.AllShipsDestroyed())
-            {
-                fireResponseDto.Game = new GameInfo { Won = game.OpponentId };
-                gameManager.FinishGame();
-            }
 
             return Ok(fireResponseDto);
         }
