@@ -67,6 +67,7 @@ namespace Spaceship.API.Controllers
             if (gameManager.AllShipsDestroyed())
             {
                 fireResponseDto.Game = new GameInfo { Won = game.OpponentId };
+                gameManager.FinishGame();
             }
 
             return Ok(fireResponseDto);

@@ -56,9 +56,11 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
             gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
             var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
 
-            var result = controller.Fire(new FireDTO { Salvo = new string[] { } }, "");
+            var result = controller.Fire(new FireDTO { Salvo = new string[] { } }, "") as OkObjectResult;
+            var responseDto = result.Value as FireResponseDTO;
 
             result.Should().BeOfType<OkObjectResult>();
+            responseDto.Game.Should().BeNull("the game is still in progress");
         }
 
         [Fact]
@@ -130,7 +132,7 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
         }
 
         [Fact]
-        void Fire_LastShipDestroyed_ReturnsWonWithOpponentId()
+        void Fire_LastShipDestroyed_ReturnsWonWithOpponentIdAndFinishesGame()
         {
             var game = GetGameWithFieldSetTo((0, 0, 1));
             game.OpponentId = "opponent-1";
@@ -142,21 +144,8 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
             var responseDto = result.Value as FireResponseDTO;
 
             responseDto.Game.Won.Should().Be("opponent-1");
-        }
-
-
-        [Fact]
-        void Fire_GameNotFinished_DoesNotReturnWon()
-        {
-            var game = GetGameWithFieldSetTo((0, 1, 1));
-            var gameRepoMock = new Mock<IGameRepository>();
-            gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
-            var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
-
-            var result = (OkObjectResult)controller.Fire(new FireDTO { Salvo = new string[] { "0x0" } }, "");
-            var responseDto = result.Value as FireResponseDTO;
-
-            responseDto.Game.Should().BeNull();
+            game.Status.Should().Be(GameStatus.Finished);
+            gameRepoMock.Verify(x => x.UpdateGame(game));
         }
 
         private Game GetGameWithFieldSetTo(params (int x, int y, int value)[] fields)
