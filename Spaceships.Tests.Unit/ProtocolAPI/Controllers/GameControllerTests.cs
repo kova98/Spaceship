@@ -50,7 +50,7 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
         [Fact]
         void Fire_GameInProgress_ReturnsOk()
         {
-            var game = GetGameWithFieldSetTo((0, 0, 0));
+            var game = GetGameWithFieldSetTo((0, 0, 1));
             game.Status = GameStatus.InProgress;
             var gameRepoMock = new Mock<IGameRepository>();
             gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
