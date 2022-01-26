@@ -1,7 +1,7 @@
 ﻿using Spaceship.DataAccess.Entities;
 using Spaceship.DataAccess.Interfaces;
 
-namespace Spaceship.ProtocolAPI.Infrastructure
+namespace Spaceship.Domain
 {
     public class GameManager
     {
@@ -20,7 +20,7 @@ namespace Spaceship.ProtocolAPI.Infrastructure
         {
             game.OpponentGrid = RandomlyPopulateGridWithShips();
             game.PlayerGrid = RandomlyPopulateGridWithShips();
-            game.Starting = game.OpponentId;
+            game.PlayerTurn = game.OpponentId;
             game.Id = gameRepository.CreateGame(game);
         }
 
@@ -97,9 +97,27 @@ namespace Spaceship.ProtocolAPI.Infrastructure
                 game.Winner = game.OpponentId;
             }
 
+            SetNextPlayerTurn();
+
             gameRepository.UpdateGame(game);
 
             return shots;
+        }
+
+        private void SetNextPlayerTurn()
+        {
+            if (game.PlayerTurn == game.PlayerId)
+            {
+                game.PlayerTurn = game.OpponentId;
+            }
+            else if (game.PlayerTurn == game.OpponentId)
+            {
+                game.PlayerTurn = game.PlayerId;
+            }
+            else
+            {
+                throw new Exception($"Invalid PlayerTurn. Found '{game.PlayerTurn}', expected '{game.PlayerId}' or '{game.OpponentId}'");
+            }
         }
 
         private bool AllShipsDestroyed()

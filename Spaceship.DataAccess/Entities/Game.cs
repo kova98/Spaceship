@@ -9,7 +9,7 @@
         public string OpponentName { get; set; }
         public string OpponentHostname { get; set; }
         public int OpponentPort { get; set; }
-        public string Starting { get; set; }
+        public string PlayerTurn { get; set; }
         public GameStatus Status { get; set; }
         public string PlayerGrid { get; set; }
         public string OpponentGrid { get; set; }

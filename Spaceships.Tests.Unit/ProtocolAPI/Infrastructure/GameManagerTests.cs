@@ -2,7 +2,7 @@
 using Moq;
 using Spaceship.DataAccess.Entities;
 using Spaceship.DataAccess.Interfaces;
-using Spaceship.ProtocolAPI.Infrastructure;
+using Spaceship.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;

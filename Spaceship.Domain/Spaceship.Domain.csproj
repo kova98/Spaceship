@@ -1,12 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Spaceship.DataAccess\Spaceship.DataAccess.csproj" />
-    <ProjectReference Include="..\Spaceship.Domain\Spaceship.Domain.csproj" />
   </ItemGroup>
+
 </Project>

@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spaceships.Tests.Unit", "Sp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spaceship.UserAPI", "Spaceship.UserAPI\Spaceship.UserAPI.csproj", "{DBC737A4-471D-4E2C-B5FF-7F3BEC80A390}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spaceship.Domain", "Spaceship.Domain\Spaceship.Domain.csproj", "{7F855D99-5856-4F1A-BC30-D02BAE820BC9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{DBC737A4-471D-4E2C-B5FF-7F3BEC80A390}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DBC737A4-471D-4E2C-B5FF-7F3BEC80A390}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DBC737A4-471D-4E2C-B5FF-7F3BEC80A390}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F855D99-5856-4F1A-BC30-D02BAE820BC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F855D99-5856-4F1A-BC30-D02BAE820BC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F855D99-5856-4F1A-BC30-D02BAE820BC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F855D99-5856-4F1A-BC30-D02BAE820BC9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

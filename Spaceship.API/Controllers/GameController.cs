@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Spaceship.DataAccess.Entities;
 using Spaceship.DataAccess.Interfaces;
-using Spaceship.ProtocolAPI.Infrastructure;
+using Spaceship.Domain;
 using Spaceship.ProtocolAPI.Models;
 
 namespace Spaceship.API.Controllers
@@ -41,7 +41,7 @@ namespace Spaceship.API.Controllers
                 UserId = config["PlayerId"],
                 FullName = config["PlayerName"],
                 GameId = $"match-{game.Id}",
-                Starting = game.Starting
+                Starting = game.PlayerTurn
             };
 
             var uri = $"{config["UserAPI"]}/match-{game.Id}";

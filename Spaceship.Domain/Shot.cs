@@ -1,4 +1,4 @@
-﻿namespace Spaceship.ProtocolAPI.Infrastructure
+﻿namespace Spaceship.Domain
 {
     public class Shot
     {
