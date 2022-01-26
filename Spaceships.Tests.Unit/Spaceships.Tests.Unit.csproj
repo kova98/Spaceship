@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
 
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Spaceship.API\Spaceship.ProtocolAPI.csproj" />
+    <ProjectReference Include="..\Spaceship.UserAPI\Spaceship.UserAPI.csproj" />
   </ItemGroup>
 
 </Project>
