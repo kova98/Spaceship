@@ -7,6 +7,7 @@ using Spaceship.DataAccess.Entities;
 using Spaceship.DataAccess.Interfaces;
 using Spaceship.ProtocolAPI.Infrastructure;
 using Spaceship.ProtocolAPI.Models;
+using Spaceships.Tests.Unit.Helpers;
 using System;
 using System.Linq;
 using Xunit;
@@ -50,7 +51,7 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
         [Fact]
         void Fire_GameInProgress_ReturnsOk()
         {
-            var game = GetGameWithFieldSetTo((0, 0, 1));
+            var game = GameHelper.GetGameWithFieldSetTo((0, 0, 1));
             game.Status = GameStatus.InProgress;
             var gameRepoMock = new Mock<IGameRepository>();
             gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
@@ -66,7 +67,7 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
         [Fact]
         void Fire_GameFinished_ReturnsNotFoundWithResponse()
         {
-            var game = GetGameWithFieldSetTo((0, 0, 1));
+            var game = GameHelper.GetGameWithFieldSetTo((0, 0, 1));
             game.Status = GameStatus.Finished;
             game.Winner = "winner";
             var gameRepoMock = new Mock<IGameRepository>();
@@ -86,7 +87,7 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
         void Fire_ProcessesShots()
         {
             const int Ship = 1;
-            var game = GetGameWithFieldSetTo((0, 1, Ship), (0, 2, Ship));
+            var game = GameHelper.GetGameWithFieldSetTo((0, 1, Ship), (0, 2, Ship));
             var gameRepoMock = new Mock<IGameRepository>();
             gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
             var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
@@ -107,7 +108,7 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
         {                                                    
             const int Ship = 1;                              
             const int Hit = -1;
-            var game = GetGameWithFieldSetTo((0, 1, Ship), (0, 2, Hit), (1, 3, Hit), (0, 4, Ship));
+            var game = GameHelper.GetGameWithFieldSetTo((0, 1, Ship), (0, 2, Hit), (1, 3, Hit), (0, 4, Ship));
             var gameRepoMock = new Mock<IGameRepository>();
             gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
             var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
@@ -127,7 +128,7 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
         [Fact]
         void Fire_UpdatesGridAndGame()
         {
-            var game = GetGameWithFieldSetTo((0, 0, 1));
+            var game = GameHelper.GetGameWithFieldSetTo((0, 0, 1));
             var gameRepoMock = new Mock<IGameRepository>();
             gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
             var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
@@ -141,7 +142,7 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
         [Fact]
         void Fire_LastShipDestroyed_ReturnsWonWithOpponentIdAndFinishesGame()
         {
-            var game = GetGameWithFieldSetTo((0, 0, 1));
+            var game = GameHelper.GetGameWithFieldSetTo((0, 0, 1));
             game.OpponentId = "opponent-1";
             var gameRepoMock = new Mock<IGameRepository>();
             gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
@@ -153,22 +154,6 @@ namespace Spaceships.Tests.Unit.ProtocolAPI.Controllers
             responseDto.Game.Won.Should().Be("opponent-1");
             game.Status.Should().Be(GameStatus.Finished);
             gameRepoMock.Verify(x => x.UpdateGame(game));
-        }
-
-        private Game GetGameWithFieldSetTo(params (int x, int y, int value)[] fields)
-        {
-            var grid = new int[16, 16];
-
-            foreach (var field in fields)
-            {
-                grid[field.x, field.y] = field.value;
-            }
-
-            var flattened = grid.Cast<int>().ToArray();
-            var gridString = string.Join(',', flattened);
-            var game = new Game { PlayerGrid = gridString };
-
-            return game;
         }
 
         private IGameRepository GetMockGameRepo(long gameId)
