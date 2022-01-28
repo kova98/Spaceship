@@ -54,5 +54,76 @@ namespace Spaceships.Tests.Unit.UserAPI.Controllers
 
             responseDto.Game.PlayerTurn.Should().Be("player-1");
         }
+
+        [Fact]
+        void Status_DoesNotExist_ReturnsNotFound()
+        {
+            var gameRepoMock = new Mock<IGameRepository>();
+            gameRepoMock.Setup(x => x.GetGame(1)).Returns(It.IsAny<Game>());
+            var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
+
+            var result = controller.Status("0");
+
+            result.Should().BeOfType<NotFoundResult>();
+        }
+
+        [Fact]
+        void Status_GameExists_ReturnsOkWithPopulatedModel()
+        {
+            var game = new Game
+            {
+                Id = 1,
+                PlayerId = "player-1",
+                OpponentId = "opponent-1",
+                PlayerTurn = "player-1"
+            };
+            var gameRepoMock = new Mock<IGameRepository>();
+            gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
+            var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
+
+            var result = (OkObjectResult)controller.Status("match-1");
+            var responseDto = result.Value as StatusResponseDTO;
+
+            responseDto.Should().BeOfType<StatusResponseDTO>();
+
+            responseDto.Self.Should().NotBeNull();
+            responseDto.Self.UserId.Should().Be("player-1");
+            responseDto.Self.Board.Should().NotBeNull();
+            responseDto.Self.Board.Length.Should().Be(16, "the grid height is 16");
+            responseDto.Self.Board.First().Length.Should().Be(16, "the grid width is 16");
+            responseDto.Self.Board.GroupBy(x => x.Length).Count().Should().Be(1, "all rows should be the same width");
+
+            responseDto.Opponent.Should().NotBeNull();
+            responseDto.Opponent.UserId.Should().Be("opponent-1");
+            responseDto.Opponent.Board.Should().NotBeNull();
+            responseDto.Opponent.Board.Length.Should().Be(16, "the grid height is 16");
+            responseDto.Opponent.Board.First().Length.Should().Be(16, "the grid width is 16");
+            responseDto.Opponent.Board.GroupBy(x => x.Length).Count().Should().Be(1, "all rows should be the same width");
+
+            responseDto.Game.Should().NotBeNull();
+            responseDto.Game.PlayerTurn.Should().Be("player-1");
+        }
+
+
+        [Fact]
+        void Status_GameExists_ReturnsCorrectBoards()
+        {
+            const int Ship = 1;                // *                    
+            const int Miss = 0;                // -
+            const int Hit = -1;                // X
+            const int EmptyOrUnknown = -3;     // .
+            var game = GameHelper
+                .GetGameWithFieldSetTo((0, 1, Ship), (0, 2, Miss), (0, 3, Hit), (0, 4, EmptyOrUnknown))
+                .WithOpponentGridFieldsSetTo((0, 1, EmptyOrUnknown), (0, 2, Hit), (0, 3, Miss), (0, 4, Ship));
+            var gameRepoMock = new Mock<IGameRepository>();
+            gameRepoMock.Setup(x => x.GetGame(It.IsAny<long>())).Returns(game);
+            var controller = new GameController(gameRepoMock.Object, Mock.Of<IConfiguration>());
+
+            var result = (OkObjectResult)controller.Status("");
+            var responseDto = result.Value as StatusResponseDTO;
+
+            responseDto.Self.Board.First().Should().Be("*-X.............");
+            responseDto.Opponent.Board.First().Should().Be(".X-*............");
+        }
     }
 }

@@ -38,6 +38,36 @@ namespace Spaceship.UserAPI.Controllers
             return Ok(fireResponseDto);
         }
 
+        [HttpGet("{gameId}")]
+        public ActionResult Status(string gameId)
+        {
+            var parsedGameId = ParseId(gameId);
+            var game = gameRepository.GetGame(parsedGameId);
+
+            if (game == null) return NotFound();
+
+            var gameManager = new GameManager(gameRepository, game);
+            var (playerBoard, opponentBoard) = gameManager.BuildBoardViews();
+            var dto = new StatusResponseDTO
+            {
+                Self = new BoardInfo { UserId = game.PlayerId, Board = playerBoard },
+                Opponent = new BoardInfo { UserId = game.OpponentId, Board = opponentBoard },
+                Game = new GameInfo { PlayerTurn = game.PlayerTurn }
+            };
+
+            return Ok(dto);
+        }
+
+        private string[] FakeBoard()
+        {
+            var board = new string[16];
+            for (int i = 0; i < 16; i++)
+            {
+                board[i] = "123456789ABCDEFG";
+            }
+            return board;
+        }
+
         private Dictionary<string, string> ShotsToDictionary(List<Shot> shots)
         {
             var dictionary = new Dictionary<string, string>();

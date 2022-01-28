@@ -1,5 +1,6 @@
 ﻿using Spaceship.DataAccess.Entities;
 using Spaceship.DataAccess.Interfaces;
+using System.Text;
 
 namespace Spaceship.Domain
 {
@@ -65,6 +66,43 @@ namespace Spaceship.Domain
             }
         }
 
+        public (string[] playerBoard, string[] opponentBoard) BuildBoardViews()
+        {
+            var playerBoard = BuildBoardView(game.PlayerGrid);
+            var opponentBoard = BuildBoardView(game.OpponentGrid);
+
+            return (playerBoard,  opponentBoard);
+        }
+
+        private string[] BuildBoardView(string gridString)
+        {
+            var grid = GetGrid(game.OpponentGrid);
+            var view = new string[16];
+
+            for (int i = 0; i < 16; i++)
+            {
+                var sb = new StringBuilder();
+                for (int j = 0; j < 16; j++)
+                {
+                    //const int Ship = 1;                // *   
+                    //const int Miss = 0;                // -
+                    //const int Hit = -1;                // X
+                    //const int EmptyOrUnknown = -3;     // .
+
+                    sb.Append(grid[i, j] switch
+                    {
+                        > 1 => '*',   // any ship
+                        0 => '-',     // miss
+                        -1 => 'X',    // hit
+                        _ => '.'      // empty or unknown
+                    });
+                }
+                view[i] = sb.ToString();
+            }
+
+            return view;
+        }
+
         private int[,] PlaceShipOnGrid(int[,] ship, int[,] grid, (int x, int y) spot)
         {
             var width = ship.GetUpperBound(0) + 1; // Add 1 because GetUpperBound() returns the index.
@@ -128,7 +166,7 @@ namespace Spaceship.Domain
 
         private void ProcessShots(List<Shot> shots)
         {
-            var grid = GetGrid();
+            var grid = GetGrid(game.PlayerGrid);
 
             foreach (var shot in shots)
             {
@@ -176,9 +214,9 @@ namespace Spaceship.Domain
             return intactShipParts.Count == 1;
         }
 
-        private int[,] GetGrid()
+        private int[,] GetGrid(string gridString)
         {
-            var gridFields = game.PlayerGrid.Split(',').Select(x => int.Parse(x));
+            var gridFields = gridString.Split(',').Select(x => int.Parse(x));
             var queue = new Queue<int>(gridFields);
             var grid = new int[GridSize, GridSize];
 

@@ -24,5 +24,21 @@ namespace Spaceships.Tests.Unit.Helpers
 
             return game;
         }
+
+        internal static Game WithOpponentGridFieldsSetTo(this Game game, params (int x, int y, int value)[] fields)
+        {
+            var grid = new int[16, 16];
+
+            foreach (var field in fields)
+            {
+                grid[field.x, field.y] = field.value;
+            }
+
+            var flattened = grid.Cast<int>().ToArray();
+            var gridString = string.Join(',', flattened);
+            game.OpponentGrid = gridString; 
+
+            return game;
+        }
     }
 }
